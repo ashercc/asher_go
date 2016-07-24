@@ -1,32 +1,35 @@
 # -*- coding:utf-8 -*-
-import re,os
-import zipfile as zp
-PATH = "/Users/cc/Desktop"
-os.chdir(PATH)          #将工作目录转至所下载zip的文件目录
-
-def getEnd(nums,z):
-    """
-    利用递归的方法,读取压缩包内每个文件,
-    直至找到内容不一样的文件,返回该文件名
-    """
-    global l1
-    filename = nums+".txt"
-    target = z.read(filename)
-    l1.append(z.getinfo(filename).comment)
-    if "Next nothing is " in target:
-        val = re.search("\d+",target).group()
-        return getEnd(val,z)
+#http://www.pythonchallenge.com/pc/def/channel.html
+from zipfile import ZipFile
+from urllib import urlretrieve
+from re import search
+import sys,string
+# urlretrieve("http://www.pythonchallenge.com/pc/def/channel.zip","channel.zip")
+zp = ZipFile("channel.zip")
+namelist = zp.namelist()
+regx = "\d+$"
+for x in namelist:
+    if 'readme.txt' in x:
+        print zp.read(x)
+    zp.read(x)
+    print zp.comment
+comments = []
+def getFile(num):
+    global comments
+    filename = num + ".txt"
+    temp = zp.read(filename)
+    m = search(regx,temp)
+    comments.append(zp.getinfo(filename).comment)
+    if m is None:
+        print zp.read(filename)
+        return num
     else:
-        print z.read(filename)
-        return filename
+        getFile(m.group())
 
 if __name__=="__main__":
-    global l1
-    l1 = []
-    z = zp.ZipFile("pythonChallenge6.zip")
-    tar = getEnd("90052",z)
-    print z.read(tar)
-    s1 = ""
-    for x in l1:
-        s1 += x
-    print s1
+    getFile("90052")
+    target = ''
+    for x in comments:
+        if x in string.letters and x not in target:
+            target += x
+    print target,'\n'
